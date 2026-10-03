@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="id">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#a91f2b">
+	<title>Absensi PASTIKA | SMKN 1 Gedong Tataan</title>
+	<style>
+		:root {
+			color-scheme: light;
+			--red: #a91f2b;
+			--red-dark: #791923;
+			--ink: #20242a;
+			--muted: #727780;
+			--line: #e4e2de;
+			--paper: #fffefa;
+			--canvas: #f3f1ed;
+			--green: #27734f;
+			--amber: #a65b16;
+			--shadow: 0 20px 60px rgba(43, 35, 30, .09);
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			min-width: 320px;
+			min-height: 100vh;
+			margin: 0;
+			color: var(--ink);
+			background:
+				radial-gradient(circle at 1px 1px, rgba(169, 31, 43, .08) 1px, transparent 1.5px) 0 0 / 24px 24px,
+				var(--canvas);
+			font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+		}
+
+		button, input, select { font: inherit; }
+		button { position: relative; overflow: hidden; cursor: pointer; }
+		button:not(:disabled) { transition: transform .18s ease, box-shadow .18s ease; }
+		button:not(:disabled):hover { transform: translateY(-2px); }
+		button:not(:disabled):active { transform: translateY(0) scale(.97); }
+		.button-ripple { position: absolute; z-index: 0; width: var(--ripple-size); height: var(--ripple-size); left: var(--ripple-x); top: var(--ripple-y); border-radius: 50%; background: rgba(255, 255, 255, .34); pointer-events: none; transform: translate(-50%, -50%) scale(0); animation: button-ripple .55s ease-out forwards; }
+
+		.topbar {
+			height: 8px;
+			background: linear-gradient(90deg, var(--red) 0 50%, #fff 50% 100%);
+			border-bottom: 1px solid rgba(32, 36, 42, .08);
+		}
+
+		.shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+
+		.masthead {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			min-height: 82px;
+			border-bottom: 1px solid rgba(32, 36, 42, .12);
+		}
+
+		.brand { display: flex; align-items: center; gap: 12px; }
+		.brand-mark {
+			display: grid;
+			width: 42px;
+			aspect-ratio: 1;
+			place-items: center;
+			border: 1px solid var(--red);
+			color: var(--red);
+			font: 700 16px Georgia, serif;
+			transform: rotate(-45deg);
+		}
+		.brand-mark span { transform: rotate(45deg); }
+		.brand-name { font: 700 19px Georgia, serif; letter-spacing: .04em; }
+		.brand-sub { margin-top: 3px; color: var(--muted); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+
+		.access-state { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; }
+		.role-chip { padding: 7px 10px; border: 1px solid #e5c7c9; color: var(--red-dark); background: #fff8f7; font-size: 12px; font-weight: 700; }
+		.quiet-button { border: 0; padding: 8px 0 8px 8px; color: var(--muted); background: transparent; font-size: 13px; }
+		.quiet-button:hover { color: var(--red); }
+		.quiet-button.login-entry { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; color: var(--ink); font-weight: 700; }
+		.login-entry:hover { border-color: var(--red); color: var(--red); }
+		.login-entry svg { width: 16px; height: 16px; flex: 0 0 auto; }
+
+		main { padding: 42px 0 64px; }
+		.page-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
+		.eyebrow { margin: 0 0 9px; color: var(--red); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+		h1 { margin: 0; font: 700 clamp(27px, 4vw, 38px)/1.1 Georgia, serif; letter-spacing: 0; }
+		.date-actions { display: flex; align-items: end; gap: 8px; }
+		.date-control { display: grid; gap: 6px; min-width: 190px; color: var(--muted); font-size: 12px; }
+		.refresh-button { display: grid; width: 43px; height: 43px; flex: 0 0 43px; place-items: center; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); background: var(--paper); font-size: 21px; }
+		.refresh-button:hover { border-color: var(--red); color: var(--red); }
+		.date-control input, .field input, .field select, .search input {
+			width: 100%;
+			min-height: 43px;
+			border: 1px solid var(--line);
+			border-radius: 3px;
+			padding: 0 12px;
+			color: var(--ink);
+			background: var(--paper);
+			outline: none;
+		}
+		input:focus, select:focus { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(169, 31, 43, .1); }
+
+		.stats { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; margin-bottom: 24px; border: 1px solid var(--line); background: var(--line); }
+		.stat { min-height: 96px; padding: 17px 20px; background: var(--paper); }
+		.stat-label { color: var(--muted); font-size: 12px; }
+		.stat-value { display: flex; align-items: baseline; gap: 8px; margin-top: 7px; font: 700 27px Georgia, serif; }
+		.stat-value small { color: var(--muted); font: 12px "Trebuchet MS", sans-serif; }
+		.stat.present .stat-value { color: var(--green); }
+		.stat.absent .stat-value { color: var(--red); }
+		.stat.sick .stat-value { color: var(--amber); }
+		.stat.unexcused .stat-value { color: #bd77ff; }
+		.stat.excused .stat-value { color: #00dff5; }
+
+		.workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; align-items: start; }
+		.entry-panel { padding: 22px; border: 1px solid var(--line); background: var(--paper); box-shadow: var(--shadow); }
+		.section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+		h2 { margin: 0; font: 700 19px Georgia, serif; }
+		.step { color: #a3a3a0; font-size: 11px; letter-spacing: .12em; }
+		.field { display: grid; gap: 7px; margin-bottom: 15px; }
+		.field label { color: #50545a; font-size: 12px; font-weight: 700; }
+		.field input::placeholder, .search input::placeholder { color: #a0a2a5; }
+		.status-label { margin: 18px 0 8px; color: #50545a; font-size: 12px; font-weight: 700; }
+		.status-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+		.status-choice input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+		.status-choice label { display: flex; min-height: 43px; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 3px; color: #62666c; background: #fff; cursor: pointer; font-size: 13px; font-weight: 700; }
+		.status-choice label::before { width: 8px; height: 8px; border: 1px solid currentColor; border-radius: 50%; content: ""; }
+		.status-choice input:checked + label[for="status-hadir"] { border-color: #8cb69f; color: var(--green); background: #f2f8f4; }
+		.status-choice input:checked + label[for="status-alpa"] { border-color: #d8a0a4; color: var(--red); background: #fff5f5; }
+		.status-choice input:checked + label::before { border: 3px solid currentColor; }
+		.status-choice input:focus-visible + label { outline: 3px solid rgba(169, 31, 43, .2); }
+		.primary-button { display: flex; width: 100%; min-height: 46px; align-items: center; justify-content: center; gap: 9px; margin-top: 19px; border: 0; border-radius: 3px; color: #fff; background: var(--red); font-weight: 700; transition: background .18s, transform .18s; }
+		.primary-button:hover { background: var(--red-dark); transform: translateY(-1px); }
+		.primary-button:active { transform: translateY(0); }
+		.button-icon { font-size: 18px; line-height: 1; }
+
+		.list-area { min-width: 0; }
+		.list-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 3px 0 14px; }
+		.list-title { display: flex; align-items: baseline; gap: 9px; }
+		.count { color: var(--muted); font-size: 12px; }
+		.list-actions { display: flex; gap: 14px; align-items: center; }
+		.text-button { display: inline-flex; align-items: center; gap: 6px; border: 0; padding: 7px 0; color: var(--red-dark); background: transparent; font-size: 12px; font-weight: 700; white-space: nowrap; }
+		.text-button:hover { text-decoration: underline; }
+		.search { margin-bottom: 10px; }
+		.search input { min-height: 39px; background: rgba(255, 254, 250, .85); }
+
+		.table-wrap { overflow-x: auto; border: 1px solid var(--line); background: var(--paper); }
+		table { width: 100%; border-collapse: collapse; text-align: left; }
+		th { padding: 12px 14px; border-bottom: 1px solid var(--line); color: var(--muted); background: #faf9f6; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+		td { padding: 12px 14px; border-bottom: 1px solid #eeece8; font-size: 13px; }
+		tbody tr:last-child td { border-bottom: 0; }
+		.number-cell { width: 42px; color: #999b9d; font-variant-numeric: tabular-nums; }
+		.person-name { font-weight: 700; }
+		.person-class { color: var(--muted); }
+		.row-status { display: inline-flex; align-items: center; gap: 6px; border: 0; padding: 6px 8px; border-radius: 2px; background: transparent; font-size: 12px; font-weight: 700; white-space: nowrap; }
+		.row-status:hover { background: #f4f1ed; }
+		.row-status::before { width: 7px; height: 7px; border-radius: 50%; background: currentColor; content: ""; }
+		.row-status.hadir { color: var(--green); }
+		.row-status.alpa { color: var(--red); }
+		.row-status.izin { color: #00a9bd; }
+		.attendance-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+		.quick-status { min-height: 30px; border: 1px solid var(--line); border-radius: 3px; padding: 4px 7px; color: var(--muted); background: transparent; font-size: 10px; font-weight: 700; white-space: nowrap; }
+		.quick-status:hover { border-color: currentColor; }
+		.quick-status.hadir { color: var(--green); }
+		.quick-status.alpa { color: var(--red); }
+		.quick-status.sakit { color: var(--amber); }
+		.quick-status.tanpa-keterangan { color: #bd77ff; }
+		.quick-status.izin { color: #00a9bd; }
+		.quick-status.selected { border-color: currentColor; background: rgba(128, 197, 221, .1); }
+		.unmarked { color: var(--muted); font-size: 12px; }
+		.remove-button { display: grid; width: 30px; height: 30px; place-items: center; border: 0; border-radius: 3px; color: #8b8e92; background: transparent; font-size: 18px; }
+		.remove-button:hover { color: var(--red); background: #fff0f0; }
+		.empty-state { padding: 46px 20px; color: var(--muted); text-align: center; }
+		.empty-symbol { display: grid; width: 40px; height: 40px; place-items: center; margin: 0 auto 12px; border: 1px solid #e9d6d5; border-radius: 50%; color: var(--red); font: 20px Georgia, serif; }
+		.empty-state strong { display: block; margin-bottom: 5px; color: var(--ink); font: 700 16px Georgia, serif; }
+		.list-note { display: flex; justify-content: space-between; gap: 12px; margin-top: 11px; color: var(--muted); font-size: 11px; }
+		.monthly-journal { margin: 0 0 30px; padding: 20px 0 24px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+		.journal-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+		.journal-heading p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+		.month-control { display: grid; gap: 6px; min-width: 180px; color: var(--muted); font-size: 11px; }
+		.month-control input { min-height: 40px; border: 1px solid var(--line); border-radius: 3px; padding: 0 10px; color: var(--ink); background: var(--paper); }
+		.month-overview { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; margin-bottom: 20px; border: 1px solid var(--line); background: var(--line); }
+		.month-metric { min-height: 72px; padding: 12px 14px; background: var(--paper); }
+		.month-metric span { display: block; color: var(--muted); font-size: 10px; }
+		.month-metric strong { display: block; margin-top: 5px; color: var(--ink); font: 700 21px Georgia, serif; }
+		.chart-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+		.chart-heading h3 { margin: 0; color: var(--ink); font: 700 15px Georgia, serif; }
+		.chart-legend { display: flex; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 10px; }
+		.legend-item { display: inline-flex; align-items: center; gap: 5px; }
+		.legend-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--legend-color); }
+		.chart-scroll { overflow-x: auto; padding: 0 0 8px; }
+		.friday-chart { display: grid; min-width: 520px; grid-template-columns: repeat(var(--friday-count, 4), minmax(90px, 1fr)); gap: 10px; align-items: end; }
+		.friday-column { display: grid; grid-template-rows: 22px 150px 28px; gap: 6px; text-align: center; }
+		.friday-total { color: var(--muted); font-size: 10px; }
+		.bar-area { display: flex; align-items: end; justify-content: center; gap: 5px; border-bottom: 1px solid var(--line); background: repeating-linear-gradient(to bottom, transparent 0, transparent 36px, rgba(128, 197, 221, .09) 37px); }
+		.trend-bar { display: flex; width: min(15%, 22px); min-width: 10px; min-height: 2px; flex-direction: column-reverse; overflow: hidden; border-radius: 3px 3px 0 0; background: rgba(128, 197, 221, .07); }
+		.bar-segment { display: block; width: 100%; min-height: 0; background: var(--bar-color); }
+		.friday-label { color: var(--ink); font-size: 11px; font-weight: 700; }
+		.friday-label small { display: block; margin-top: 2px; color: var(--muted); font-size: 9px; font-weight: 400; }
+		.journal-table-wrap { overflow-x: auto; margin-top: 18px; border: 1px solid var(--line); background: var(--paper); }
+		.journal-table { min-width: 640px; }
+		.journal-table th, .journal-table td { padding: 9px 11px; }
+		.no-session { color: var(--muted); font-style: italic; }
+		.month-empty { padding: 26px 12px; color: var(--muted); text-align: center; font-size: 12px; }
+		.toast { position: fixed; right: 22px; bottom: 22px; z-index: 5; max-width: min(360px, calc(100vw - 44px)); padding: 12px 16px; border-left: 3px solid var(--green); color: #fff; background: #252a2c; box-shadow: var(--shadow); font-size: 13px; animation: rise .2s ease-out; }
+		.toast.error { border-color: #eb858b; }
+		@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+		@keyframes button-ripple { to { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+
+		.login-screen { position: fixed; inset: 8px 0 0; z-index: 10; display: grid; overflow-y: auto; place-items: center; padding: 16px; background: rgba(3, 10, 15, .78); backdrop-filter: blur(5px); }
+		.login-layout { display: grid; width: min(500px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); grid-template-columns: 1fr; overflow-y: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); box-shadow: var(--shadow); animation: rise .35s ease-out; }
+		.login-intro { position: relative; display: flex; min-height: 125px; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 18px 24px; color: #fff; background: var(--red); }
+		.login-intro::after { position: absolute; right: -70px; bottom: -125px; width: 300px; height: 300px; border: 1px solid rgba(255,255,255,.22); border-radius: 50%; box-shadow: 0 0 0 26px rgba(255,255,255,.04), 0 0 0 55px rgba(255,255,255,.035); content: ""; }
+		.intro-kicker { position: relative; z-index: 1; color: rgba(255,255,255,.75); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+		.intro-title { position: relative; z-index: 1; max-width: 360px; margin: 12px 0; font: 700 27px/1.13 Georgia, serif; }
+		.intro-foot { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,.82); font-size: 12px; }
+		.intro-line { width: 26px; height: 1px; background: rgba(255,255,255,.7); }
+		.login-form { align-self: center; padding: 22px 26px 20px; }
+		.login-form h1 { font-size: 23px; }
+		.login-form > p { margin: 7px 0 15px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+		.login-form .field { margin-bottom: 11px; }
+		.login-form .primary-button { margin-top: 14px; }
+		.login-hint { margin-top: 11px; color: #898b8e; font-size: 11px; line-height: 1.5; }
+		.login-cancel { width: 100%; margin-top: 8px; border: 0; color: var(--muted); background: transparent; font-size: 12px; }
+		[hidden] { display: none !important; }
+
+		@media (max-width: 760px) {
+			.shell { width: min(100% - 28px, 600px); }
+			.masthead { min-height: 70px; }
+			main { padding-top: 29px; }
+			.stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+			.workspace { grid-template-columns: 1fr; gap: 26px; }
+			.entry-panel { box-shadow: none; }
+			.login-screen { min-height: 0; padding: 12px; }
+			.login-layout { max-width: 400px; }
+			.login-intro { min-height: 105px; padding: 14px 18px; }
+			.intro-title { max-width: 260px; margin: 8px 0; font-size: 23px; }
+			.login-form { padding: 17px 19px; }
+		}
+		@media (max-width: 480px) {
+			.brand-name { font-size: 16px; }
+			.brand-sub { font-size: 9px; }
+			.brand-mark { width: 36px; }
+			.access-state { gap: 8px; font-size: 11px; }
+			.role-chip { padding: 6px 7px; }
+			.page-heading { align-items: start; flex-direction: column; gap: 16px; }
+			.date-control { width: 100%; }
+			.stat { min-height: 81px; padding: 13px 10px; }
+			.stat-value { font-size: 23px; }
+			.stat-label { font-size: 10px; }
+			.stats { grid-template-columns: repeat(2, 1fr); }
+			.month-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+			.journal-heading { align-items: stretch; flex-direction: column; }
+			.month-control { width: 100%; }
+			.chart-heading { align-items: start; flex-direction: column; }
+			.list-heading { align-items: start; flex-direction: column; }
+			.list-actions { width: 100%; justify-content: space-between; }
+			.date-actions { width: 100%; }
+			.date-actions .date-control { flex: 1; }
+			th, td { padding: 10px 9px; }
+			th { font-size: 9px; }
+			td { font-size: 12px; }
+			.person-class { white-space: nowrap; }
+		}
+		:root {
+			color-scheme: dark;
+			--red: #ff5578;
+			--red-dark: #ff7893;
+			--ink: #effaff;
+			--muted: #9aafbd;
+			--line: rgba(128, 197, 221, .2);
+			--paper: #101923;
+			--canvas: #080d13;
+			--green: #c7ff4a;
+			--amber: #ffc857;
+			--shadow: 0 20px 60px rgba(0, 0, 0, .38), 0 0 32px rgba(0, 220, 255, .07);
+		}
+		body {
+			background:
+				linear-gradient(rgba(67, 192, 222, .035) 1px, transparent 1px) 0 0 / 34px 34px,
+				linear-gradient(90deg, rgba(67, 192, 222, .035) 1px, transparent 1px) 0 0 / 34px 34px,
+				radial-gradient(ellipse at 12% 0%, rgba(0, 224, 255, .11), transparent 38%),
+				radial-gradient(ellipse at 92% 95%, rgba(199, 255, 74, .07), transparent 34%),
+				var(--canvas);
+		}
+		.topbar { background: linear-gradient(90deg, #00e5ff, #64ffb5 48%, #c7ff4a 72%, #ff5578); border-bottom: 0; box-shadow: 0 0 22px rgba(0, 229, 255, .38); }
+		.masthead { border-color: var(--line); }
+		.brand-mark { border-color: #00e5ff; color: #00e5ff; box-shadow: 0 0 18px rgba(0, 229, 255, .24), inset 0 0 12px rgba(0, 229, 255, .08); }
+		.brand-name { color: #f3fbff; text-shadow: 0 0 18px rgba(0, 229, 255, .3); }
+		.brand-sub { color: #68dff2; }
+		.role-chip { border-color: rgba(0, 229, 255, .4); color: #75ecff; background: rgba(0, 229, 255, .08); box-shadow: 0 0 16px rgba(0, 229, 255, .08); }
+		.quiet-button:hover, .eyebrow { color: #00dff5; }
+		h1 { text-shadow: 0 0 24px rgba(0, 229, 255, .12); }
+		.date-control input, .field input, .field select, .search input { border-color: var(--line); color: var(--ink); background: #0b131c; }
+		input:focus, select:focus { border-color: #00dff5 !important; box-shadow: 0 0 0 3px rgba(0, 223, 245, .14), 0 0 22px rgba(0, 223, 245, .1); }
+		.stats { border-color: var(--line); background: var(--line); }
+		.stat { background: linear-gradient(145deg, rgba(20, 34, 46, .98), rgba(14, 23, 32, .98)); }
+		.stat.present .stat-value { text-shadow: 0 0 18px rgba(199, 255, 74, .28); }
+		.stat.absent .stat-value { text-shadow: 0 0 18px rgba(255, 85, 120, .24); }
+		.entry-panel, .login-layout { border-color: var(--line); background: rgba(15, 24, 34, .96); box-shadow: var(--shadow); }
+		.step { color: #54d9ea; }
+		.field label, .status-label { color: #c5d6e1; }
+		.field input::placeholder, .search input::placeholder { color: #718695; }
+		.status-choice label { border-color: var(--line); color: #a9bbc7; background: #0c151e; }
+		.status-choice input:checked + label[for="status-hadir"] { border-color: rgba(199, 255, 74, .65); color: var(--green); background: rgba(199, 255, 74, .09); box-shadow: 0 0 16px rgba(199, 255, 74, .08); }
+		.status-choice input:checked + label[for="status-alpa"] { border-color: rgba(255, 85, 120, .65); color: #ff7893; background: rgba(255, 85, 120, .09); }
+		.status-choice input:checked + label[for="status-sakit"] { border-color: rgba(255, 200, 87, .65); color: #ffc857; background: rgba(255, 200, 87, .09); }
+		.status-choice input:checked + label[for="status-tanpa-keterangan"] { border-color: rgba(189, 119, 255, .65); color: #d09bff; background: rgba(189, 119, 255, .09); }
+		.status-choice input:focus-visible + label { outline-color: rgba(0, 223, 245, .4); }
+		.primary-button { color: #061017; background: linear-gradient(100deg, #00dff5, #61ffc2 55%, #c7ff4a); box-shadow: 0 0 22px rgba(0, 223, 245, .19); }
+		.primary-button:hover { color: #061017; background: linear-gradient(100deg, #55edff, #82ffd0 55%, #d9ff78); box-shadow: 0 0 30px rgba(0, 223, 245, .3); }
+		.text-button { color: #53e7f8; }
+		.text-button:hover { color: #c7ff4a; }
+		.table-wrap { border-color: var(--line); background: #0e1720; }
+		th { border-color: var(--line); color: #78dce9; background: #14212c; }
+		td { border-color: rgba(128, 197, 221, .12); }
+		.person-class, .number-cell { color: #8da2b0; }
+		.row-status:hover { background: rgba(0, 223, 245, .08); }
+		.row-status.hadir { color: var(--green); }
+		.row-status.alpa { color: #ff718b; }
+		.row-status.sakit { color: var(--amber); }
+		.row-status.izin { color: #00dff5; }
+		.row-status.tanpa-keterangan { color: #d09bff; }
+		.quick-status { border-color: var(--line); background: #0c151e; }
+		.quick-status.hadir { color: var(--green); }
+		.quick-status.alpa { color: #ff718b; }
+		.quick-status.sakit { color: var(--amber); }
+		.quick-status.izin { color: #00dff5; }
+		.quick-status.tanpa-keterangan { color: #d09bff; }
+		.quick-status.selected { background: rgba(128, 197, 221, .12); }
+		.unmarked { color: #94aab8; }
+		.monthly-journal { border-color: var(--line); }
+		.month-control input { border-color: var(--line); color: var(--ink); background: #0b131c; }
+		.month-metric { background: linear-gradient(145deg, rgba(20, 34, 46, .98), rgba(14, 23, 32, .98)); }
+		.month-metric strong { color: #f3fbff; }
+		.chart-heading h3 { color: #f0f9ff; }
+		.bar-area { border-color: var(--line); background: repeating-linear-gradient(to bottom, transparent 0, transparent 36px, rgba(128, 197, 221, .09) 37px); }
+		.trend-bar { background: rgba(128, 197, 221, .07); }
+		.journal-table-wrap { border-color: var(--line); background: #0e1720; }
+		.journal-table th { border-color: var(--line); color: #78dce9; background: #14212c; }
+		.journal-table td { border-color: rgba(128, 197, 221, .12); }
+		.remove-button { color: #8499a6; }
+		.remove-button:hover { color: #ff7893; background: rgba(255, 85, 120, .12); }
+		.empty-state, .list-note, .count { color: #94aab8; }
+		.empty-symbol { border-color: rgba(0, 223, 245, .4); color: #00dff5; box-shadow: 0 0 18px rgba(0, 223, 245, .12); }
+		.empty-state strong, h2 { color: #f0f9ff; }
+		.toast { background: #13212b; box-shadow: 0 0 24px rgba(0, 0, 0, .45); }
+		.login-intro { color: #06151b; background: linear-gradient(135deg, #00cce8 0%, #28a9ed 40%, #3978f4 72%, #52dfa5 100%); }
+		.login-intro::after { border-color: rgba(255, 255, 255, .38); box-shadow: 0 0 0 26px rgba(255, 255, 255, .08), 0 0 0 55px rgba(255, 255, 255, .05); }
+		.intro-kicker, .intro-foot { color: rgba(3, 22, 34, .82); }
+		.intro-line { background: rgba(3, 22, 34, .65); }
+		.login-form > p { color: #9aafbd; }
+		.login-form .eyebrow { color: #00dff5; }
+		.login-hint { color: #78909f; }
+		@media (prefers-reduced-motion: reduce) {
+			*, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+		}
+	</style>
+</head>
+<body>
+	<div class="topbar" aria-hidden="true"></div>
+	<div class="shell">
+		<header class="masthead">
+			<div class="brand" aria-label="Absensi PASTIKA SMKN 1 Gedong Tataan">
+				<div class="brand-mark" aria-hidden="true"><span>P</span></div>
+				<div>
+					<div class="brand-name">PASTIKA</div>
+					<div class="brand-sub">SMKN 1 Gedong Tataan</div>
+				</div>
+			</div>
+			<div class="access-state" id="access-state">
+				<span id="current-date-label"></span>
+				<span class="role-chip" id="role-chip" hidden></span>
+				<button class="quiet-button login-entry" id="login-button" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg><span>Login Sistem</span></button>
+				<button class="quiet-button" id="logout-button" type="button" hidden>Keluar</button>
+			</div>
+		</header>
+
+		<section class="login-screen" id="login-screen" aria-labelledby="login-title" hidden>
+			<div class="login-layout">
+				<div class="login-intro">
+					<div class="intro-kicker">Satuan · Disiplin · Tanggung jawab</div>
+					<div class="intro-title">Hadir dengan tertib, bertugas dengan bangga.</div>
+					<div class="intro-foot"><span class="intro-line"></span> Buku kehadiran ekstrakurikuler</div>
+				</div>  
+				<form class="login-form" id="login-form">
+					<p class="eyebrow">Akses pengurus</p>
+					<h1 id="login-title">Masuk absensi</h1>
+					<p>Gunakan akun Ketua, Wakil, Sekretaris, atau Pembina untuk mencatat kehadiran latihan.</p>
+					<div class="field">
+						<label for="login-role">Masuk sebagai</label>
+						<select id="login-role" required>
+							<option value="pembina">Pembina</option>
+							<option value="ketua">Ketua</option>
+							<option value="wakil">Wakil Ketua</option>
+							<option value="sekretaris">Sekretaris</option>
+						</select>
+					</div>
+					<div class="field">
+						<label for="login-password">Password</label>
+						<input id="login-password" type="password" placeholder="******" autocomplete="current-password" required>
+					</div>
+					<button class="primary-button" type="submit"><span>Masuk</span><span class="button-icon" aria-hidden="true">&#8594;</span></button>
+					<div class="login-hint">Akses khusus Ketua, Wakil, Sekretaris, dan Pembina PASTIKA.</div>
+					<button class="login-cancel" id="login-cancel" type="button">Batal</button>
+				</form>
+			</div>
+		</section>
+
+		<main id="attendance-screen">
+			<div class="page-heading">
+				<div>
+					<p class="eyebrow">Catatan latihan</p>
+					<h1>Absensi anggota</h1>
+				</div>
+				<div class="date-actions">
+					<label class="date-control" for="attendance-date">Tanggal kegiatan
+						<input id="attendance-date" type="date">
+					</label>
+					<button class="refresh-button" id="refresh-button" type="button" title="Muat ulang data" aria-label="Muat ulang data absensi">&#8635;</button>
+				</div>
+			</div>
+
+			<section class="stats" aria-label="Ringkasan kehadiran">
+				<div class="stat"><div class="stat-label">Jumlah seluruh anggota</div><div class="stat-value"><span id="member-total-count">0</span><small>anggota</small></div></div>
+				<div class="stat"><div class="stat-label">Tercatat hari ini</div><div class="stat-value"><span id="total-count">0</span><small>anggota</small></div></div>
+				<div class="stat present"><div class="stat-label">Hadir</div><div class="stat-value"><span id="present-count">0</span><small>anggota</small></div></div>
+				<div class="stat absent"><div class="stat-label">Alpa</div><div class="stat-value"><span id="absent-count">0</span><small>anggota</small></div></div>
+				<div class="stat sick"><div class="stat-label">Sakit</div><div class="stat-value"><span id="sick-count">0</span><small>anggota</small></div></div>
+				<div class="stat excused"><div class="stat-label">Izin</div><div class="stat-value"><span id="excused-count">0</span><small>anggota</small></div></div>
+				<div class="stat unexcused"><div class="stat-label">Tanpa keterangan</div><div class="stat-value"><span id="unexcused-count">0</span><small>anggota</small></div></div>
+			</section>
+
+			<section class="monthly-journal" aria-labelledby="journal-title">
+				<div class="journal-heading">
+					<div><p class="eyebrow">Evaluasi rutin</p><h2 id="journal-title">Tren jurnal bulanan</h2><p>Rekap kegiatan ekstrakurikuler setiap hari Jumat.</p></div>
+					<label class="month-control" for="journal-month">Pilih bulan<input id="journal-month" type="month"></label>
+				</div>
+				<div class="month-overview" aria-label="Ringkasan bulanan">
+					<div class="month-metric"><span>Jumat dalam bulan</span><strong id="journal-friday-count">0</strong></div>
+					<div class="month-metric"><span>Anggota tercatat</span><strong id="journal-total-count">0</strong></div>
+					<div class="month-metric"><span>Hadir</span><strong id="journal-present-count">0</strong></div>
+					<div class="month-metric"><span>Sakit</span><strong id="journal-sick-count">0</strong></div>
+					<div class="month-metric"><span>Izin</span><strong id="journal-excused-count">0</strong></div>
+					<div class="month-metric"><span>Alpa + tanpa keterangan</span><strong id="journal-absence-count">0</strong></div>
+				</div>
+				<div class="chart-heading"><h3>Perbandingan status setiap Jumat</h3><div class="chart-legend" id="journal-legend"></div></div>
+				<div class="chart-scroll"><div class="friday-chart" id="friday-chart" role="img" aria-label="Grafik jumlah status kehadiran setiap Jumat"></div></div>
+				<div class="month-empty" id="journal-empty" hidden>Belum ada data absensi untuk bulan ini. Jumat yang belum tercatat tetap tampil pada tabel jurnal.</div>
+				<div class="journal-table-wrap">
+					<table class="journal-table"><thead><tr><th scope="col">Jumat ke</th><th scope="col">Tanggal kegiatan</th><th scope="col">Hadir</th><th scope="col">Alpa</th><th scope="col">Sakit</th><th scope="col">Izin</th><th scope="col">Tanpa keterangan</th><th scope="col">Total</th></tr></thead><tbody id="journal-table-body"></tbody></table>
+				</div>
+			</section>
+
+			<div class="workspace">
+				<section class="list-area" aria-labelledby="list-title">
+					<div class="list-heading">
+						<div class="list-title"><h2 id="list-title">Absensi anggota</h2><span class="count" id="list-count">0 catatan</span></div>
+						<div class="list-actions">
+							<button class="text-button" id="export-button" type="button" title="Unduh daftar sebagai CSV"><span aria-hidden="true">&#8595;</span> Ekspor CSV</button>
+							<button class="text-button" id="report-button" type="button" title="Cetak atau simpan berkas kehadiran sebagai PDF"><span aria-hidden="true">&#128424;</span> Cetak Berkas</button>
+							<button class="text-button" id="clear-button" type="button" title="Hapus catatan untuk tanggal ini">Hapus tanggal</button>
+						</div>
+					</div>
+					<label class="search"><input id="search-input" type="search" placeholder="Cari nama atau kelas..." aria-label="Cari nama atau kelas"></label>
+					<div class="table-wrap">
+						<table>
+							  <thead><tr><th scope="col">No.</th><th scope="col">Nama</th><th scope="col">Kelas</th><th scope="col">Status</th><th scope="col" aria-label="Aksi"></th></tr></thead>
+							<tbody id="attendance-list"></tbody>
+						</table>
+						<div class="empty-state" id="empty-state">
+							<span class="empty-symbol" aria-hidden="true">P</span>
+							<strong>Belum ada catatan</strong>
+							<span>Tambahkan anggota untuk memulai absensi hari ini.</span>
+						</div>
+					</div>
+					<div class="list-note"><span>Perubahan tersimpan otomatis di perangkat ini.</span><span id="last-updated"></span></div>
+				</section>
+			</div>
+		</main>
+	</div>
+	<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+	<script>
+		// Ganti sandi berikut sebelum halaman digunakan bersama.
+		const credentials = { ketua: "pastika1", wakil: "pastika2", pembina: "pastika3", sekretaris: "pastika4" };
+		const memberRoster = [
+			{ name: "ADITIA FEBRIANTO", className: "X TJKT" },
+			{ name: "AGHNI MILATUL ULYA", className: "X TJKT" },
+			{ name: "AHMAD RAFIT USTADI", className: "X ATPH" },
+			{ name: "AJIS FAREL PRATAMA", className: "XI KOMATSU" },
+			{ name: "AL HADDAD FHUTRA DHUTA S.", className: "X TKR A" },
+			{ name: "ALFANDO ADI PUTRA", className: "X TJKT" },
+			{ name: "ALOYSIUS VALEN RAMA CRISTIAN", className: "X RPL" },
+			{ name: "AMANDA MUAMANAH", className: "XI AKL" },
+			{ name: "AMANDA REINA", className: "X AKL" },
+			{ name: "ANDIEN DWI ASSYFA", className: "X AKL" },
+			{ name: "ANINDYA AURANA SALSABILA", className: "X MPLB" },
+			{ name: "ANISA PUTRI CAHYANI", className: "X RPL" },
+			{ name: "APRILYA HANDAYANI", className: "XI MPLB" },
+			{ name: "ASSYFA FARA PRATIWI", className: "XI MPLB" },
+			{ name: "AZZAHARA PERMATA SARI", className: "X AKL" },
+			{ name: "BHENING PANGASTUTI", className: "X RPL" },
+			{ name: "DAYA TALITA RAFIFA", className: "X AKL" },
+			{ name: "DWI PUJIANGGRAINI", className: "XI ATPH" },
+			{ name: "EKA NUR MAQFIROH", className: "XI MPLB" },
+			{ name: "FAHNZA DWI TIFANY", className: "X TKR A" },
+			{ name: "FARELIANSYAH", className: "XI RPL" },
+			{ name: "FEBIANI VALENTIN", className: "XI MPLB" },
+			{ name: "FICKY DWI PRATAMA", className: "XI TOKR" },
+			{ name: "FIQI ADHAN NUGRAHA", className: "X TKR A" },
+			{ name: "HANUM NURIZA ANGGRAINI", className: "X AKL" },
+			{ name: "IBNU MUZAKKI", className: "TKR A" },
+			{ name: "IQBAL KHOIRU RAMADAN", className: "X TJKT" },
+			{ name: "KEYSHA PUTRI RAMADHANI", className: "X MPLB" },
+			{ name: "M. FADHILLAH ALHAFEEZY", className: "X TSM B" },
+			{ name: "MAYLANI IZZA PUTRI", className: "XI MPLB" },
+			{ name: "MUHAMMAD ARDIANSYAH", className: "XI ATPH" },
+			{ name: "MUHAMMAD DAFFA TITO", className: "XI RPL" },
+			{ name: "MUHAMMAD FATHIN LUTFI", className: "X TJKT" },
+			{ name: "MUTIARA NUR AZIZA", className: "X MPLB" },
+			{ name: "NABILA RIRIS AULIA", className: "X AKL" },
+			{ name: "NAYSILA CAHYA SAPUTRI", className: "X MPLB" },
+			{ name: "NIKITA ZEZA PUTRI APRIANT", className: "X MPLB" },
+			{ name: "NUR AINA", className: "XI MPLB" },
+			{ name: "NURAINI WIDYANINGRUM", className: "X ATPH" },
+			{ name: "OKTAVIA INDAH SYAKILA", className: "X MPLB" },
+			{ name: "PUTRI PURNAMA", className: "XI ATPH" },
+			{ name: "RANI MARYANI", className: "XI AKL" },
+			{ name: "RANI SAFITRI", className: "XI MPLB" },
+			{ name: "REHAN ALFIANSYAH", className: "XI KOMATSU" },
+			{ name: "RENDI REHANSYAH", className: "XI APAT" },
+			{ name: "RENO GILANG SETIAWAN", className: "XI KOMATSU" },
+			{ name: "RINA NUR AINI", className: "X AKL" },
+			{ name: "RISCA FADHILAH R.", className: "TJKT" },
+			{ name: "RISKITA RINJANI", className: "X ATPH" },
+			{ name: "SALSA NAYLA HENIARUZAH", className: "X MPLB" },
+			{ name: "SAVIRA HANA", className: "X ATPH" },
+			{ name: "SILFA KARTIKA", className: "X AKL" },
+			{ name: "SINAR ANALISA", className: "X AKL" },
+			{ name: "SYFA AULIA", className: "XI RPL" },
+			{ name: "TIARA AMELIA", className: "X AKL" },
+			{ name: "ULFA ROHMIATUS SAIDAH", className: "X AKL" }
+		];
+		const storageKey = "paskib-attendance-v1";
+		const loginScreen = document.getElementById("login-screen");
+		const attendanceScreen = document.getElementById("attendance-screen");
+		const accessState = document.getElementById("access-state");
+		const attendanceDate = document.getElementById("attendance-date");
+		const list = document.getElementById("attendance-list");
+		const searchInput = document.getElementById("search-input");
+		const emptyState = document.getElementById("empty-state");
+		let records = loadRecords();
+		let activeRole = "";
+		let toastTimer;
+
+		function localDateString(date = new Date()) {
+			const year = date.getFullYear();
+			const month = String(date.getMonth() + 1).padStart(2, "0");
+			const day = String(date.getDate()).padStart(2, "0");
+			return `${year}-${month}-${day}`;
+		}
+
+		function loadRecords() {
+			try {
+				const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+				return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+			} catch {
+				return {};
+			}
+		}
+
+		function saveRecords() {
+			try {
+				localStorage.setItem(storageKey, JSON.stringify(records));
+				document.getElementById("last-updated").textContent = `Disimpan ${new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`;
+				return true;
+			} catch {
+				showToast("Penyimpanan browser penuh atau tidak tersedia.", true);
+				return false;
+			}
+		}
+
+		function dayRecords() {
+			const day = records[attendanceDate.value];
+			return Array.isArray(day) ? day : [];
+		}
+
+		function isAuthorized() {
+			return Object.hasOwn(credentials, activeRole);
+		}
+
+		function renderJournal() {
+			const monthValue = document.getElementById("journal-month").value;
+			if (!monthValue) return;
+
+			const [year, month] = monthValue.split("-").map(Number);
+			const fridays = [];
+			const cursor = new Date(year, month - 1, 1);
+			while (cursor.getMonth() === month - 1) {
+				if (cursor.getDay() === 5) {
+					const date = new Date(cursor);
+					const dateKey = localDateString(date);
+					const entries = Array.isArray(records[dateKey]) ? records[dateKey] : [];
+					const counts = Object.fromEntries(["Hadir", "Alpa", "Sakit", "Izin", "Tanpa Keterangan"].map((status) => [status, entries.filter((entry) => entry.status === status).length]));
+					fridays.push({ date, dateKey, entries, counts });
+				}
+				cursor.setDate(cursor.getDate() + 1);
+			}
+
+			const totals = Object.fromEntries(["Hadir", "Alpa", "Sakit", "Izin", "Tanpa Keterangan"].map((status) => [status, fridays.reduce((sum, friday) => sum + friday.counts[status], 0)]));
+			const totalRecords = fridays.reduce((sum, friday) => sum + friday.entries.length, 0);
+			const statusColors = { "Hadir": "#c7ff4a", "Alpa": "#ff718b", "Sakit": "#ffc857", "Izin": "#00dff5", "Tanpa Keterangan": "#bd77ff" };
+			document.getElementById("journal-friday-count").textContent = String(fridays.length);
+			document.getElementById("journal-total-count").textContent = String(totalRecords);
+			document.getElementById("journal-present-count").textContent = String(totals.Hadir);
+			document.getElementById("journal-sick-count").textContent = String(totals.Sakit);
+			document.getElementById("journal-excused-count").textContent = String(totals.Izin);
+			document.getElementById("journal-absence-count").textContent = String(totals.Alpa + totals["Tanpa Keterangan"]);
+
+			const legend = document.getElementById("journal-legend");
+			legend.replaceChildren();
+			Object.entries(statusColors).forEach(([status, color]) => {
+				const item = document.createElement("span");
+				item.className = "legend-item";
+				const dot = document.createElement("span");
+				dot.className = "legend-dot";
+				dot.style.setProperty("--legend-color", color);
+				const label = document.createElement("span");
+				label.textContent = status;
+				item.append(dot, label);
+				legend.append(item);
+			});
+
+			const chart = document.getElementById("friday-chart");
+			chart.replaceChildren();
+			chart.style.setProperty("--friday-count", String(fridays.length));
+			const maxCount = Math.max(1, ...fridays.flatMap((friday) => Object.values(friday.counts)));
+			fridays.forEach((friday, index) => {
+				const column = document.createElement("div");
+				column.className = "friday-column";
+				const total = document.createElement("div");
+				total.className = "friday-total";
+				total.textContent = friday.entries.length ? `${friday.entries.length} anggota` : "Belum diisi";
+				const barArea = document.createElement("div");
+				barArea.className = "bar-area";
+				Object.entries(statusColors).forEach(([status, color]) => {
+					const value = friday.counts[status];
+					const bar = document.createElement("div");
+					bar.className = "trend-bar";
+					bar.style.height = `${value ? Math.max(8, (value / maxCount) * 132) : 2}px`;
+					bar.style.backgroundColor = value ? color : "rgba(128, 197, 221, .07)";
+					bar.title = `${status}: ${value}`;
+					bar.setAttribute("aria-label", `${status}: ${value}`);
+					barArea.append(bar);
+				});
+				const label = document.createElement("div");
+				label.className = "friday-label";
+				label.textContent = `Jumat ${index + 1}`;
+				const dateText = document.createElement("small");
+				dateText.textContent = friday.date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+				label.append(dateText);
+				column.append(total, barArea, label);
+				chart.append(column);
+			});
+
+			const tableBody = document.getElementById("journal-table-body");
+			tableBody.replaceChildren();
+			fridays.forEach((friday, index) => {
+				const row = document.createElement("tr");
+				const values = [
+					`Jumat ${index + 1}`,
+					friday.date.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+					friday.counts.Hadir,
+					friday.counts.Alpa,
+					friday.counts.Sakit,
+					friday.counts.Izin,
+					friday.counts["Tanpa Keterangan"],
+					friday.entries.length
+				];
+				values.forEach((value, cellIndex) => {
+					const cell = document.createElement("td");
+					cell.textContent = String(value);
+					if (cellIndex === 1 && friday.entries.length === 0) {
+						cell.className = "no-session";
+						cell.textContent += " · belum ada catatan";
+					}
+					row.append(cell);
+				});
+				tableBody.append(row);
+			});
+			document.getElementById("journal-empty").hidden = totalRecords > 0;
+		}
+
+		function showToast(message, isError = false) {
+			const toast = document.getElementById("toast");
+			toast.textContent = message;
+			toast.classList.toggle("error", isError);
+			toast.hidden = false;
+			clearTimeout(toastTimer);
+			toastTimer = setTimeout(() => { toast.hidden = true; }, 2800);
+		}
+
+		function render() {
+			const entries = dayRecords();
+			const authorized = isAuthorized();
+			const query = searchInput.value.trim().toLocaleLowerCase("id-ID");
+			const rosterRows = authorized ? memberRoster.map((member) => ({
+				member,
+				entry: entries.find((item) => item.name.toLocaleLowerCase("id-ID") === member.name.toLocaleLowerCase("id-ID") && item.className.toLocaleLowerCase("id-ID") === member.className.toLocaleLowerCase("id-ID"))
+			})) : entries.map((entry) => ({ member: null, entry }));
+			const rosterNames = new Set(memberRoster.map((member) => `${member.name.toLocaleLowerCase("id-ID")}|${member.className.toLocaleLowerCase("id-ID")}`));
+			const additionalRows = authorized ? entries
+				.filter((entry) => !rosterNames.has(`${entry.name.toLocaleLowerCase("id-ID")}|${entry.className.toLocaleLowerCase("id-ID")}`))
+				.map((entry) => ({ member: null, entry })) : [];
+			const visibleRows = [...rosterRows, ...additionalRows].filter(({ member, entry }) => {
+				const name = member ? member.name : entry.name;
+				const className = member ? member.className : entry.className;
+				return `${name} ${className}`.toLocaleLowerCase("id-ID").includes(query);
+			});
+			list.replaceChildren();
+			visibleRows.forEach(({ member, entry }, index) => {
+				const name = member ? member.name : entry.name;
+				const className = member ? member.className : entry.className;
+				const row = document.createElement("tr");
+				const numberCell = document.createElement("td");
+				numberCell.className = "number-cell";
+				numberCell.textContent = String(index + 1).padStart(2, "0");
+				const nameCell = document.createElement("td");
+				nameCell.className = "person-name";
+				nameCell.textContent = name;
+				const classCell = document.createElement("td");
+				classCell.className = "person-class";
+				classCell.textContent = className;
+				const statusCell = document.createElement("td");
+				if (authorized && member) {
+					const statusActions = document.createElement("div");
+					statusActions.className = "attendance-actions";
+					["Hadir", "Alpa", "Sakit", "Izin", "Tanpa Keterangan"].forEach((status) => {
+						const statusButton = document.createElement("button");
+						statusButton.type = "button";
+						statusButton.className = `quick-status ${status.toLowerCase().replace(/\s+/g, "-")}${entry && entry.status === status ? " selected" : ""}`;
+						statusButton.textContent = status === "Tanpa Keterangan" ? "Tanpa Ket." : status;
+						statusButton.title = status;
+						statusButton.setAttribute("aria-label", `${name}: tandai ${status}`);
+						statusButton.setAttribute("aria-pressed", String(Boolean(entry && entry.status === status)));
+						statusButton.addEventListener("click", () => setRosterStatus(member, status));
+						statusActions.append(statusButton);
+					});
+					statusCell.append(statusActions);
+				} else if (entry && authorized) {
+					const statusButton = document.createElement("button");
+					statusButton.type = "button";
+					statusButton.className = `row-status ${entry.status.toLowerCase().replace(/\s+/g, "-")}`;
+					statusButton.textContent = entry.status;
+					statusButton.title = "Klik untuk mengganti status";
+					statusButton.setAttribute("aria-label", `${name}, status ${entry.status}. Klik untuk mengganti.`);
+					statusButton.addEventListener("click", () => updateStatus(entry.id));
+					statusCell.append(statusButton);
+				} else if (entry) {
+					const statusLabel = document.createElement("span");
+					statusLabel.className = `row-status ${entry.status.toLowerCase().replace(/\s+/g, "-")}`;
+					statusLabel.textContent = entry.status;
+					statusCell.append(statusLabel);
+				} else {
+					const unmarked = document.createElement("span");
+					unmarked.className = "unmarked";
+					unmarked.textContent = "Belum diabsen";
+					statusCell.append(unmarked);
+				}
+				const actionCell = document.createElement("td");
+				if (authorized && entry) {
+					const removeButton = document.createElement("button");
+					removeButton.type = "button";
+					removeButton.className = "remove-button";
+					removeButton.textContent = "×";
+					removeButton.title = `Hapus ${name}`;
+					removeButton.setAttribute("aria-label", `Hapus catatan ${name}`);
+					removeButton.addEventListener("click", () => removeEntry(entry.id));
+					actionCell.append(removeButton);
+				}
+				row.append(numberCell, nameCell, classCell, statusCell, actionCell);
+				list.append(row);
+			});
+
+			const statusCounts = Object.fromEntries(["Hadir", "Alpa", "Sakit", "Izin", "Tanpa Keterangan"].map((status) => [status, entries.filter((entry) => entry.status === status).length]));
+			document.getElementById("member-total-count").textContent = String(memberRoster.length);
+			document.getElementById("total-count").textContent = String(entries.length);
+			document.getElementById("present-count").textContent = String(statusCounts.Hadir);
+			document.getElementById("absent-count").textContent = String(statusCounts.Alpa);
+			document.getElementById("sick-count").textContent = String(statusCounts.Sakit);
+			document.getElementById("excused-count").textContent = String(statusCounts.Izin);
+			document.getElementById("unexcused-count").textContent = String(statusCounts["Tanpa Keterangan"]);
+			document.getElementById("list-count").textContent = authorized ? `${entries.length} tercatat` : `${entries.length} catatan`;
+			emptyState.hidden = visibleRows.length > 0;
+			if (query && visibleRows.length === 0) {
+				emptyState.querySelector("strong").textContent = "Tidak ada hasil";
+				emptyState.querySelector("span:last-child").textContent = "Coba kata kunci nama atau kelas yang lain.";
+			} else {
+				emptyState.querySelector("strong").textContent = "Belum ada catatan";
+				emptyState.querySelector("span:last-child").textContent = "Belum ada anggota yang tercatat untuk tanggal ini.";
+			}
+			document.getElementById("clear-button").hidden = !authorized;
+			document.getElementById("export-button").hidden = !authorized;
+			document.getElementById("report-button").hidden = !authorized;
+			renderJournal();
+		}
+
+		function setRosterStatus(member, status) {
+			if (!isAuthorized()) return showToast("Hanya pengurus yang dapat mencatat absensi.", true);
+			const entries = dayRecords();
+			const entry = entries.find((item) => item.name.toLocaleLowerCase("id-ID") === member.name.toLocaleLowerCase("id-ID") && item.className.toLocaleLowerCase("id-ID") === member.className.toLocaleLowerCase("id-ID"));
+			if (entry) {
+				entry.status = status;
+			} else {
+				entries.push({ id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, name: member.name, className: member.className, status });
+				records[attendanceDate.value] = entries;
+			}
+			if (!saveRecords()) return;
+			render();
+			showToast(`${member.name} ditandai ${status}.`);
+		}
+
+		function updateStatus(id) {
+			if (!isAuthorized()) return showToast("Hanya pengurus yang dapat mengubah absensi.", true);
+			const entry = dayRecords().find((item) => item.id === id);
+			if (!entry) return;
+			const statuses = ["Hadir", "Alpa", "Sakit", "Izin", "Tanpa Keterangan"];
+			entry.status = statuses[(statuses.indexOf(entry.status) + 1) % statuses.length];
+			saveRecords();
+			render();
+			showToast(`Status ${entry.name} diubah menjadi ${entry.status}.`);
+		}
+
+		function removeEntry(id) {
+			if (!isAuthorized()) return showToast("Hanya pengurus yang dapat menghapus absensi.", true);
+			const entries = dayRecords();
+			const entry = entries.find((item) => item.id === id);
+			if (!entry) return;
+			records[attendanceDate.value] = entries.filter((item) => item.id !== id);
+			saveRecords();
+			render();
+			showToast(`Catatan ${entry.name} dihapus.`);
+		}
+
+		function setLoggedIn(role) {
+			activeRole = Object.hasOwn(credentials, role) ? role : "";
+			const authorized = isAuthorized();
+			loginScreen.hidden = true;
+			attendanceScreen.hidden = false;
+			accessState.hidden = false;
+			document.getElementById("login-button").hidden = authorized;
+			document.getElementById("logout-button").hidden = !authorized;
+			document.getElementById("role-chip").hidden = !authorized;
+			if (role) {
+				document.getElementById("role-chip").textContent = { ketua: "Ketua", wakil: "Wakil Ketua", pembina: "Pembina", sekretaris: "Sekretaris" }[activeRole];
+			}
+			render();
+		}
+
+		document.getElementById("login-button").addEventListener("click", () => { loginScreen.hidden = false; });
+		document.getElementById("login-cancel").addEventListener("click", () => { loginScreen.hidden = true; });
+
+		document.getElementById("login-form").addEventListener("submit", (event) => {
+			event.preventDefault();
+			const role = document.getElementById("login-role").value;
+			const password = document.getElementById("login-password").value;
+			if (password !== credentials[role]) {
+				showToast("Sandi tidak sesuai. Silakan coba lagi.", true);
+				document.getElementById("login-password").select();
+				return;
+			}
+			document.getElementById("login-password").value = "";
+			setLoggedIn(role);
+		});
+
+		document.getElementById("logout-button").addEventListener("click", () => setLoggedIn(""));
+
+		attendanceDate.addEventListener("change", render);
+		document.getElementById("refresh-button").addEventListener("click", () => {
+			records = loadRecords();
+			render();
+			showToast("Data absensi diperbarui.");
+		});
+		searchInput.addEventListener("input", render);
+
+		document.getElementById("clear-button").addEventListener("click", () => {
+			if (!isAuthorized()) return showToast("Hanya pengurus yang dapat menghapus catatan.", true);
+			const entries = dayRecords();
+			if (entries.length === 0) {
+				showToast("Tidak ada catatan pada tanggal ini.", true);
+				return;
+			}
+			if (!confirm(`Hapus semua ${entries.length} catatan pada tanggal ini?`)) return;
+			delete records[attendanceDate.value];
+			saveRecords();
+			render();
+			showToast("Semua catatan tanggal ini telah dihapus.");
+		});
+
+		document.getElementById("export-button").addEventListener("click", () => {
+			if (!isAuthorized()) return showToast("Hanya pengurus yang dapat mengekspor CSV.", true);
+			const entries = dayRecords();
+			if (entries.length === 0) {
+				showToast("Belum ada data untuk diekspor.", true);
+				return;
+			}
+			const escapeCsv = (value) => `"${String(value).replace(/"/g, '""')}"`;
+			const rows = [["Ekstrakurikuler", "Sekolah", "Tanggal", "Nama", "Kelas", "Status"], ...entries.map((entry) => ["PASTIKA", "SMKN 1 Gedong Tataan", attendanceDate.value, entry.name, entry.className, entry.status])];
+			const csv = "\uFEFF" + rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n");
+			const link = document.createElement("a");
+			link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+			link.download = `absensi-paskib-${attendanceDate.value}.csv`;
+			link.click();
+			URL.revokeObjectURL(link.href);
+			showToast("File CSV berhasil diunduh.");
+		});
+
+		document.getElementById("report-button").addEventListener("click", () => {
+			if (!isAuthorized()) return showToast("Hanya pengurus yang dapat mencetak berkas.", true);
+			const entries = dayRecords();
+			if (entries.length === 0) {
+				showToast("Belum ada data kehadiran untuk dibuat berkas.", true);
+				return;
+			}
+
+			const reportWindow = window.open("", "_blank");
+			if (!reportWindow) {
+				showToast("Izinkan pop-up untuk membuka berkas cetak.", true);
+				return;
+			}
+
+			const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+				"&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+			})[character]);
+			const statusOrder = ["Hadir", "Alpa", "Sakit", "Izin", "Tanpa Keterangan"];
+			const counts = Object.fromEntries(statusOrder.map((status) => [status, entries.filter((entry) => entry.status === status).length]));
+			const dateLabel = new Date(`${attendanceDate.value}T00:00:00`).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+			const schoolLogoUrl = new URL("logo-sekolah.jpg", window.location.href).href;
+			const clubLogoUrl = new URL("logo-pastika.jpg", window.location.href).href;
+			const rows = entries.map((entry, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(entry.name)}</td><td>${escapeHtml(entry.className)}</td><td><span class="status ${entry.status.toLowerCase().replace(/\s+/g, "-")}">${escapeHtml(entry.status)}</span></td></tr>`).join("");
+			const reportHtml = `<!doctype html>
+				<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Berkas Kehadiran PASTIKA - ${escapeHtml(attendanceDate.value)}</title>
+				<style>
+					@page { size: A4 portrait; margin: 15mm; }
+					* { box-sizing: border-box; }
+					body { margin: 0; color: #17242b; font: 12px Arial, sans-serif; }
+					.report { max-width: 790px; margin: 0 auto; }
+					.head { display: grid; width: 100%; grid-template-columns: 88px minmax(0, 1fr) 88px; gap: 8px; align-items: center; padding: 0 0 13px; border-bottom: 3px solid #087c91; }
+					.logo-slot { display: grid; width: 84px; height: 84px; place-items: center; overflow: hidden; border-radius: 50%; background: #050505; }
+					.report-logo { display: block; width: 100%; height: 100%; object-fit: contain; }
+					.logo-slot.club .report-logo { transform: scale(1.28); }
+					.school-copy { min-width: 0; color: #000; text-align: center; }
+					.school-copy p { margin: 0; }
+					.gov-name { color: #000; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; }
+					.department-name { margin-top: 4px !important; color: #000; font-size: 12px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
+					.school-name { margin-top: 6px !important; color: #000; font-size: 17px; font-weight: 800; line-height: 1.12; white-space: nowrap; }
+					.school-details { margin-top: 8px; color: #000; font-size: 9.5px; line-height: 1.35; }
+					.school-details p + p { margin-top: 3px; }
+					.school-details strong { font-weight: 700; }
+					.doc-title { margin: 23px 0 5px; text-align: center; font-size: 17px; font-weight: 700; letter-spacing: 1.4px; }
+					.date { margin: 0 0 18px; color: #53646b; text-align: center; }
+					.summary { display: grid; grid-template-columns: repeat(6, 1fr); margin: 0 0 18px; border: 1px solid #b8c8cb; }
+					.summary div { padding: 9px 5px; border-right: 1px solid #b8c8cb; text-align: center; }
+					.summary div:last-child { border-right: 0; }
+					.summary strong { display: block; margin-bottom: 3px; font-size: 17px; }
+					.summary span { font-size: 9px; }
+					table { width: 100%; border-collapse: collapse; }
+					th, td { padding: 8px 9px; border: 1px solid #aebdc1; text-align: left; }
+					th { color: #fff; background: #126c7a; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; }
+					td:first-child { width: 38px; text-align: center; }
+					.status { font-weight: 700; }
+					.hadir { color: #287343; }.alpa { color: #b12743; }.sakit { color: #a15c00; }.izin { color: #087c91; }.tanpa-keterangan { color: #6843a0; }
+					.signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 38px; text-align: center; }
+					.signature { min-height: 106px; }.signature p { margin: 0 0 66px; }.signature strong { display: block; width: max-content; min-width: 230px; margin: 0 auto; padding-bottom: 3px; border-bottom: 1px solid #17242b; font-size: 12px; }
+					.footer { margin-top: 20px; color: #66777c; font-size: 9px; text-align: center; }
+					@media screen { body { padding: 24px; background: #e8eef0; }.report { padding: 28px; background: #fff; box-shadow: 0 8px 32px #18313a22; } }
+					@media print { .report { max-width: none; } }
+				</style></head><body><article class="report">
+				<header class="head">
+					<div class="logo-slot"><img class="report-logo" src="${escapeHtml(schoolLogoUrl)}" alt="Logo SMKN 1 Gedong Tataan" onerror="this.hidden=true"></div>
+					<div class="school-copy">
+						<p class="gov-name">PEMERINTAH PROVINSI LAMPUNG</p>
+						<p class="department-name">DINAS PENDIDIKAN DAN KEBUDAYAAN</p>
+						<p class="school-name">SMK NEGERI 1 GEDONG TATAAN</p>
+						<div class="school-details">
+							<p><strong>NPSN:</strong> 69754002 &nbsp; <strong>STATUS:</strong> TERAKREDITASI “B”</p>
+							<p><strong>Alamat:</strong> Jl. Veteran II Dam’c, Desa Wiyono, Kec. Gedong Tataan, Kab. Pesawaran 35371</p>
+							<p><strong>Telp.:</strong> 0813 7777 4561 &nbsp; <strong>Website:</strong> www.smkn1gedongtataan.sch.id</p>
+							<p><strong>Email:</strong> smkn1gedongtataan@ymail.com</p>
+						</div>
+					</div>
+					<div class="logo-slot club"><img class="report-logo" src="${escapeHtml(clubLogoUrl)}" alt="Logo PASTIKA" onerror="this.hidden=true"></div>
+				</header>
+				<h2 class="doc-title">DAFTAR KEHADIRAN ANGGOTA</h2><p class="date">${escapeHtml(dateLabel)}</p>
+				<section class="summary"><div><strong>${entries.length}</strong><span>Total Anggota</span></div><div><strong>${counts.Hadir}</strong><span>Hadir</span></div><div><strong>${counts.Alpa}</strong><span>Alpa</span></div><div><strong>${counts.Sakit}</strong><span>Sakit</span></div><div><strong>${counts.Izin}</strong><span>Izin</span></div><div><strong>${counts["Tanpa Keterangan"]}</strong><span>Tanpa Keterangan</span></div></section>
+				<table><thead><tr><th>No.</th><th>Nama Anggota</th><th>Kelas</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
+				<section class="signatures"><div class="signature"><p>Pembina</p><strong>YUWANDISKA FEBIAWAN, S.Pd.</strong></div><div class="signature"><p>Ketua</p><strong>FARELIANSYAH</strong></div></section>
+				<footer class="footer">Berkas dibuat ${escapeHtml(new Date().toLocaleString("id-ID"))}</footer>
+				</article><script>window.addEventListener("load", () => setTimeout(() => window.print(), 250));<\/script></body></html>`;
+			reportWindow.document.open();
+			reportWindow.document.write(reportHtml);
+			reportWindow.document.close();
+			reportWindow.focus();
+			showToast("Berkas dibuka. Pilih Simpan sebagai PDF pada jendela cetak.");
+		});
+
+		attendanceDate.value = localDateString();
+		document.getElementById("current-date-label").textContent = new Date().toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" });
+		document.getElementById("journal-month").value = localDateString().slice(0, 7);
+		document.getElementById("journal-month").addEventListener("change", renderJournal);
+		setLoggedIn("");
+		document.addEventListener("click", (event) => {
+			const button = event.target instanceof Element ? event.target.closest("button") : null;
+			if (!button || button.disabled) return;
+			const bounds = button.getBoundingClientRect();
+			const size = Math.max(bounds.width, bounds.height) * 2.2;
+			const ripple = document.createElement("span");
+			ripple.className = "button-ripple";
+			ripple.setAttribute("aria-hidden", "true");
+			ripple.style.setProperty("--ripple-size", `${size}px`);
+			ripple.style.setProperty("--ripple-x", `${(event.clientX || bounds.left + bounds.width / 2) - bounds.left}px`);
+			ripple.style.setProperty("--ripple-y", `${(event.clientY || bounds.top + bounds.height / 2) - bounds.top}px`);
+			button.append(ripple);
+			setTimeout(() => ripple.remove(), 600);
+		});
+	</script>
+</body>
+</html>
